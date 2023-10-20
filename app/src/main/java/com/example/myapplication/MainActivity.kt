@@ -27,6 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,70 +39,75 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Column {
-        Text(
-            text = "Hello $name!",
-            modifier = modifier,
-        )
-        Text( text = "Milena")
-    }
+
+
+fun generateRandomValue(min: Int, max: Int): Int {
+    require(min <= max) { "min must be less than or equal to max" }
+    return Random.nextInt(min, max + 1)
 }
 
 @Composable
 fun NumberGuessingGame() {
-    var minRange by remember {mutableStateOf(-50)}
-    var maxRange by remember {mutableStateOf(50)}
-    var sliderValue by remember {mutableStateOf((minRange + maxRange) / 2)}
-    var targetValue by remember {mutableStateOf((minRange + maxRange) / 2)}
+    var minRange by remember { mutableStateOf(0) }
+    var maxRange by remember { mutableStateOf(100) }
+    var sliderValue by remember { mutableStateOf((minRange + maxRange) / 2) }
+    var targetValue by remember { mutableStateOf(generateRandomValue(minRange, maxRange)) }
 
-    var score by remember {mutableStateOf(0)}
-    var message by remember {mutableStateOf("Score: ")}
+    var score by remember { mutableStateOf(0) }
+    var message by remember { mutableStateOf("") } // Initialize message as an empty string
 
-
-    fun checkNumber(number: Int):String {
-        return when {
-            number > 0 -> "Positive"
-            number < 0 -> "Negative"
-            else -> "Zero"
+    fun updateScore() {
+        val difference = (sliderValue - targetValue).absoluteValue
+        when {
+            difference <= 3 -> {
+                score += 5
+                message = "Close! You get 5 points."
+            }
+            difference <= 8 -> {
+                score += 1
+                message = "Not bad, you get 1 point."
+            }
+            else -> {
+                message = "You missed the target."
+            }
         }
     }
 
-    Column(   modifier = Modifier.fillMaxSize(),
-    verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally){
-        Text("Number Guessing Game", fontSize = 24.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Guessing the number between $minRange and $maxRange", fontSize = 16.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Target: $targetValue", fontSize = 16.sp)
-        Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Bull's Eye Game", fontSize = 24.sp)
+        Spacer(modifier = Modifier.height(36.dp))
+
+        Text("Move the slider as close as you can to: $targetValue", fontSize = 16.sp)
+        Spacer(modifier = Modifier.height(200.dp))
 
         Slider(
             value = sliderValue.toFloat(),
-            onValueChange = {newValue -> sliderValue = newValue.toInt()},
+            onValueChange = { newValue -> sliderValue = newValue.toInt() },
             valueRange = minRange.toFloat()..maxRange.toFloat()
-            )
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
                 println(sliderValue)
-
-                println(checkNumber(sliderValue))
+                updateScore()
             },
             modifier = Modifier.padding(8.dp)
         ) {
-            Text("Tap")
+            Text("Hit Me!")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(72.dp))
 
-        Text( text = message, fontSize = 20.sp, color = Color.Green)
+        Text(text = "You Score: $score", fontSize = 20.sp, color = Color.Black)
+        Spacer(modifier = Modifier.height(72.dp))
 
+        Text(text = message, fontSize = 20.sp, color = Color.Black)
     }
-
 }
 
 
